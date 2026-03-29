@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 export const metadata = {
   title: "QuickTicket — Travel Smarter, Book Faster",
   description: "Book flights, trains and buses with real-time pricing and seat availability.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({ children }) {

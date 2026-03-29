@@ -68,10 +68,10 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
   const typeIcon = route.type === "flight" ? <Plane size={15} /> : route.type === "train" ? <Train size={15} /> : <Bus size={15} />;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={!loading ? onClose : undefined} />
 
-      <div className="relative glass-dark rounded-2xl w-full max-w-md shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div className="relative glass-dark rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-2xl max-h-[92vh] overflow-y-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/8">

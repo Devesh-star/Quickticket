@@ -29,12 +29,12 @@ export default function BookingCard({ onSearch, searching }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto glass-dark rounded-2xl p-6 shadow-2xl">
+    <div className="max-w-2xl mx-auto glass-dark rounded-2xl p-4 sm:p-6 shadow-2xl">
       {/* Type tabs */}
-      <div className="flex gap-1 mb-5">
+      <div className="flex gap-1 mb-5 overflow-x-auto no-scrollbar">
         {TYPES.map((t) => (
           <button key={t.id} onClick={() => setType(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
               type === t.id ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30" : "text-gray-400 hover:text-white hover:bg-white/5"
             }`}>
             {t.icon}{t.label}
@@ -59,7 +59,7 @@ export default function BookingCard({ onSearch, searching }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* From / To */}
-        <div className="grid grid-cols-[1fr,auto,1fr] items-center gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] items-center gap-2">
           <div>
             <label className="text-xs text-gray-500 uppercase tracking-wide mb-1.5 block">From</label>
             <div className="relative">
@@ -69,7 +69,7 @@ export default function BookingCard({ onSearch, searching }) {
             </div>
           </div>
           <button type="button" onClick={swap}
-            className="mt-5 w-9 h-9 rounded-xl bg-white/5 hover:bg-orange-500/10 border border-white/10 flex items-center justify-center text-gray-400 hover:text-orange-500 transition-all">
+            className="sm:mt-5 w-9 h-9 rounded-xl bg-white/5 hover:bg-orange-500/10 border border-white/10 flex items-center justify-center text-gray-400 hover:text-orange-500 transition-all mx-auto sm:mx-0 rotate-90 sm:rotate-0">
             <ArrowLeftRight size={14} />
           </button>
           <div>
@@ -83,7 +83,7 @@ export default function BookingCard({ onSearch, searching }) {
         </div>
 
         {/* Date / Travelers */}
-        <div className={`grid gap-3 ${tripType === "round-trip" ? "grid-cols-3" : "grid-cols-2"}`}>
+        <div className={`grid gap-3 grid-cols-1 ${tripType === "round-trip" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
           <div>
             <label className="text-xs text-gray-500 uppercase tracking-wide mb-1.5 block">Departure</label>
             <div className="relative">

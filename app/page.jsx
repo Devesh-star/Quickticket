@@ -45,17 +45,17 @@ function HomeContent() {
       <Navbar />
 
       {/* Hero */}
-      <section className="gradient-hero pt-32 pb-16 px-4">
+      <section className="gradient-hero pt-24 sm:pt-32 pb-12 sm:pb-16 px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 text-orange-400 text-xs font-medium mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
             Live seat availability · Real-time pricing
           </div>
-          <h1 className="font-display text-5xl sm:text-6xl font-black text-white leading-tight mb-4">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-4">
             Travel Smarter,<br />
             <span className="text-gradient">Book Faster.</span>
           </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">
+          <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
             Flights, trains, buses — find the best deals across all modes of travel,
             backed by a real MongoDB database with live search.
           </p>
@@ -133,10 +133,10 @@ function HomeContent() {
       {/* Stats */}
       {!results && (
         <section className="max-w-3xl mx-auto px-4 pb-20 text-center">
-          <div className="flex items-center justify-center gap-12 mt-4">
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mt-4">
             {[["50K+", "Happy Travelers"], ["200+", "Live Routes"], ["99.9%", "Uptime"]].map(([val, label]) => (
               <div key={label}>
-                <p className="font-display font-black text-white text-3xl">{val}</p>
+                <p className="font-display font-black text-white text-2xl sm:text-3xl">{val}</p>
                 <p className="text-gray-500 text-sm mt-1">{label}</p>
               </div>
             ))}
