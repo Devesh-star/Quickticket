@@ -36,8 +36,8 @@ export default function Navbar({ initialSession }) {
 
   const navLinks = [
     { href: "/search?type=flight", label: "Book Flights", icon: <Plane size={14} /> },
-    { href: "/dashboard", label: "My Bookings", icon: <LayoutDashboard size={14} /> },
-    { href: "#", label: "Support", icon: <Shield size={14} /> },
+    { href: "/destinations", label: "Destinations", icon: <Map size={14} /> },
+    { href: "/support", label: "Help/Support", icon: <HelpCircle size={14} /> },
   ];
 
   return (
@@ -169,10 +169,16 @@ export default function Navbar({ initialSession }) {
                     <LayoutDashboard size={14} className="text-orange-500" /> Dashboard
                   </Link>
                   {isAdmin && (
-                    <Link href="/admin" onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 text-gray-300 hover:text-white text-sm px-3 py-3 rounded-xl hover:bg-white/5 transition-all">
-                      <Shield size={14} className="text-purple-400" /> Admin Panel
-                    </Link>
+                    <>
+                      <Link href="/admin" onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 text-purple-300 hover:text-white text-sm px-3 py-3 rounded-xl hover:bg-purple-500/20 bg-purple-500/10 border border-purple-500/20 transition-all mb-1">
+                        <Shield size={14} /> Admin Dashboard
+                      </Link>
+                      <Link href="/admin/routes" onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 text-purple-300 hover:text-white text-sm px-3 py-3 rounded-xl hover:bg-purple-500/20 bg-purple-500/10 border border-purple-500/20 transition-all mb-1">
+                        <Plane size={14} /> Routes
+                      </Link>
+                    </>
                   )}
                   <button onClick={() => { handleSignOut(); setMobileOpen(false); }}
                     className="w-full flex items-center gap-3 text-gray-300 hover:text-red-400 text-sm px-3 py-3 rounded-xl hover:bg-white/5 transition-all">
