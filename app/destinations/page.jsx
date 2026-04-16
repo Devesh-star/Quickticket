@@ -7,12 +7,12 @@ import Link from "next/link";
 
 export default function DestinationsPage() {
   const popularCities = [
-    { name: "Mumbai", desc: "The City of Dreams", image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Mumbai_Skyline_at_Night.jpg" },
-    { name: "Delhi", desc: "The Heart of India", image: "https://upload.wikimedia.org/wikipedia/commons/5/53/India_Gate_in_New_Delhi_03-2016.jpg" },
+    { name: "Mumbai", desc: "The City of Dreams", image: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Mumbai_India_Bridge.jpg" },
+    { name: "Delhi", desc: "The Heart of India", image: "https://upload.wikimedia.org/wikipedia/commons/4/40/Jama_Masjid_2011.jpg" },
     { name: "Bengaluru", desc: "Silicon Valley", image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Vidhana_Soudha%2C_Bangalore.jpg" },
-    { name: "Goa", desc: "Pristine Beaches", image: "https://upload.wikimedia.org/wikipedia/commons/9/90/Colva_Beach_Goa_India.jpg" },
-    { name: "Ahmedabad", desc: "Vibrant Heritage", image: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Sabarmati_Riverfront_Ahmedabad.jpg" },
-    { name: "Amritsar", desc: "Golden City", image: "https://upload.wikimedia.org/wikipedia/commons/1/19/Golden_Temple_India.jpg" },
+    { name: "Goa", desc: "Pristine Beaches", image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/BeachFun.jpg" },
+    { name: "Ahmedabad", desc: "Vibrant Heritage", image: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Sabarmati_riverside.jpg" },
+    { name: "Amritsar", desc: "Golden City", image: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Golden_Temple_Amritsar_Gurudwara_%28cropped%29.jpg" },
   ];
 
   return (
