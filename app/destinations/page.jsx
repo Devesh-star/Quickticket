@@ -9,7 +9,7 @@ export default function DestinationsPage() {
   const popularCities = [
     { name: "Mumbai", desc: "The City of Dreams", image: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Mumbai_India_Bridge.jpg" },
     { name: "Delhi", desc: "The Heart of India", image: "https://upload.wikimedia.org/wikipedia/commons/4/40/Jama_Masjid_2011.jpg" },
-    { name: "Bengaluru", desc: "Silicon Valley", image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Vidhana_Soudha%2C_Bangalore.jpg" },
+    { name: "Bengaluru", desc: "Silicon Valley", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?q=80&w=800&auto=format&fit=crop" },
     { name: "Goa", desc: "Pristine Beaches", image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/BeachFun.jpg" },
     { name: "Ahmedabad", desc: "Vibrant Heritage", image: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Sabarmati_riverside.jpg" },
     { name: "Amritsar", desc: "Golden City", image: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Golden_Temple_Amritsar_Gurudwara_%28cropped%29.jpg" },
