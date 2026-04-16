@@ -7,12 +7,12 @@ import Link from "next/link";
 
 export default function DestinationsPage() {
   const popularCities = [
-    { name: "Mumbai", desc: "The City of Dreams", image: "https://images.unsplash.com/photo-1522206001222-38cf9cb59f0f?q=80&w=800&auto=format&fit=crop" },
-    { name: "Delhi", desc: "The Heart of India", image: "https://images.unsplash.com/photo-1587460594344-9dcbd0a5666f?q=80&w=800&auto=format&fit=crop" },
-    { name: "Bengaluru", desc: "Silicon Valley", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?q=80&w=800&auto=format&fit=crop" },
-    { name: "Goa", desc: "Pristine Beaches", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e4f2?q=80&w=800&auto=format&fit=crop" },
-    { name: "Ahmedabad", desc: "Vibrant Heritage", image: "https://images.unsplash.com/photo-1588612140660-84c6c04f9543?q=80&w=800&auto=format&fit=crop" },
-    { name: "Amritsar", desc: "Golden City", image: "https://images.unsplash.com/photo-1598462058340-0255b93d3958?q=80&w=800&auto=format&fit=crop" },
+    { name: "Mumbai", desc: "The City of Dreams", image: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Mumbai_Skyline_at_Night.jpg" },
+    { name: "Delhi", desc: "The Heart of India", image: "https://upload.wikimedia.org/wikipedia/commons/5/53/India_Gate_in_New_Delhi_03-2016.jpg" },
+    { name: "Bengaluru", desc: "Silicon Valley", image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Vidhana_Soudha%2C_Bangalore.jpg" },
+    { name: "Goa", desc: "Pristine Beaches", image: "https://upload.wikimedia.org/wikipedia/commons/9/90/Colva_Beach_Goa_India.jpg" },
+    { name: "Ahmedabad", desc: "Vibrant Heritage", image: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Sabarmati_Riverfront_Ahmedabad.jpg" },
+    { name: "Amritsar", desc: "Golden City", image: "https://upload.wikimedia.org/wikipedia/commons/1/19/Golden_Temple_India.jpg" },
   ];
 
   return (
