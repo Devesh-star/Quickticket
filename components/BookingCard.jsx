@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plane, Train, Bus, MapPin, ArrowLeftRight, Calendar, Users, Search, Loader2 } from "lucide-react";
+import { Plane, Train, Bus, ArrowLeftRight, Calendar, Users, Search, Loader2 } from "lucide-react";
+import CitySelect from "@/components/CitySelect";
 
 const TYPES = [
   { id: "flight", label: "Flights", icon: <Plane size={15} /> },
-  { id: "train",  label: "Trains",  icon: <Train size={15} /> },
-  { id: "bus",    label: "Buses",   icon: <Bus size={15} /> },
 ];
 
 export default function BookingCard({ onSearch, searching }) {
@@ -30,17 +29,7 @@ export default function BookingCard({ onSearch, searching }) {
 
   return (
     <div className="max-w-2xl mx-auto glass-dark rounded-2xl p-4 sm:p-6 shadow-2xl">
-      {/* Type tabs */}
-      <div className="flex gap-1 mb-5 overflow-x-auto no-scrollbar">
-        {TYPES.map((t) => (
-          <button key={t.id} onClick={() => setType(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-              type === t.id ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30" : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}>
-            {t.icon}{t.label}
-          </button>
-        ))}
-      </div>
+
 
       {/* Trip type */}
       <div className="flex gap-4 mb-5">
@@ -62,11 +51,7 @@ export default function BookingCard({ onSearch, searching }) {
         <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] items-center gap-2">
           <div>
             <label className="text-xs text-gray-500 uppercase tracking-wide mb-1.5 block">From</label>
-            <div className="relative">
-              <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-500" />
-              <input type="text" value={from} onChange={(e) => setFrom(e.target.value)}
-                placeholder="Delhi" required className="input-field !pl-9" />
-            </div>
+            <CitySelect value={from} onChange={setFrom} placeholder="Delhi" id="city-from" />
           </div>
           <button type="button" onClick={swap}
             className="sm:mt-5 w-9 h-9 rounded-xl bg-white/5 hover:bg-orange-500/10 border border-white/10 flex items-center justify-center text-gray-400 hover:text-orange-500 transition-all mx-auto sm:mx-0 rotate-90 sm:rotate-0">
@@ -74,11 +59,7 @@ export default function BookingCard({ onSearch, searching }) {
           </button>
           <div>
             <label className="text-xs text-gray-500 uppercase tracking-wide mb-1.5 block">To</label>
-            <div className="relative">
-              <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-500" />
-              <input type="text" value={to} onChange={(e) => setTo(e.target.value)}
-                placeholder="Mumbai" required className="input-field !pl-9" />
-            </div>
+            <CitySelect value={to} onChange={setTo} placeholder="Mumbai" id="city-to" />
           </div>
         </div>
 

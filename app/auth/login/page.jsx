@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Mail, Lock, Chrome } from "lucide-react";
+import { Loader2, Mail, Lock, Chrome, Shield } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
@@ -37,6 +37,28 @@ export default function LoginPage() {
     }
   };
 
+  const handleAdminLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        email: "admin@quickticket.com",
+        password: "admin123",
+        redirect: false,
+      });
+      if (result?.error) {
+        toast.error("Admin login failed");
+      } else {
+        toast.success("Welcome, Admin!");
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogle = () => signIn("google", {redirect:true, callbackUrl: "/dashboard" });
 
   return (
@@ -55,9 +77,16 @@ export default function LoginPage() {
         <div className="glass-dark rounded-2xl p-8">
           {/* Google */}
           <button onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all mb-6">
+            className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all mb-4">
             <Chrome size={18} className="text-orange-400" />
             Continue with Google
+          </button>
+
+          {/* Admin Demo Button */}
+          <button onClick={handleAdminLogin} disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 font-medium py-3 px-4 rounded-xl transition-all mb-6">
+            <Shield size={18} />
+            Login as Demo Admin
           </button>
 
           <div className="flex items-center gap-3 mb-6">

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/mongodb";
 import { Booking } from "@/models/Booking";
-import { Route } from "@/models/Route";
+import { User } from "@/models/User";
 import { stripe } from "@/lib/stripe";
-import mongoose from "mongoose";
+import { sendBookingConfirmation } from "@/lib/email";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -23,29 +23,27 @@ export async function GET(req) {
 
     await connectDB();
 
-    // Find and update the booking
+    // Find and update the booking (seats are already reserved at checkout time)
     const booking = await Booking.findOne({ stripeSessionId: sessionId });
 
     if (booking && booking.paymentStatus !== "Paid") {
-      const dbSession = await mongoose.startSession();
-      await dbSession.withTransaction(async () => {
-        booking.paymentStatus = "Paid";
-        booking.status = "Confirmed";
-        await booking.save({ session: dbSession });
+      booking.paymentStatus = "Paid";
+      booking.status = "Confirmed";
+      await booking.save();
+      // Note: seatsLeft was already decremented and bookedSeats were already
+      // updated when the checkout session was created, so no need to do it again.
 
-        // Decrement seats
-        await Route.findOneAndUpdate(
-          {
-            type: booking.type,
-            fromCity: booking.fromCity,
-            toCity: booking.toCity,
-            operator: booking.operator,
-          },
-          { $inc: { seatsLeft: -booking.travelers } },
-          { session: dbSession }
-        );
-      });
-      await dbSession.endSession();
+      // Send confirmation email (fire-and-forget so redirect isn't blocked)
+      try {
+        const user = await User.findById(booking.userId).lean();
+        if (user?.email) {
+          sendBookingConfirmation(booking.toObject(), user.email, user.name).catch((err) =>
+            console.error("[EMAIL ASYNC ERROR]", err.message)
+          );
+        }
+      } catch (emailErr) {
+        console.error("[EMAIL LOOKUP ERROR]", emailErr.message);
+      }
     }
   } catch (error) {
     console.error("[CHECKOUT SUCCESS]", error);

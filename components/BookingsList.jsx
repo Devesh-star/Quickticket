@@ -120,6 +120,16 @@ export default function BookingsList({ initialBookings }) {
                         <CreditCard size={11} />{booking.paymentMethod ?? "Card"} · {(paymentStatusConfig[booking.paymentStatus] ?? paymentStatusConfig.Paid).label}
                       </p>
                     </div>
+                    {booking.selectedSeats?.length > 0 && (
+                      <div className="col-span-2 sm:col-span-3">
+                        <p className="text-gray-600 text-xs mb-1 uppercase tracking-wide">Seats</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {booking.selectedSeats.map(s => (
+                            <span key={s} className="bg-orange-500/15 text-orange-400 text-xs font-bold px-2 py-0.5 rounded">{s}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="col-span-2 sm:col-span-3">
                       <p className="text-gray-600 text-xs mb-1 uppercase tracking-wide">Booking Reference</p>
                       <p className="text-orange-500 font-mono font-bold tracking-widest">{booking.bookingRef}</p>

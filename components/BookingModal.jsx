@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  X, Plane, Train, Bus, Loader2, CheckCircle2,
-  ChevronRight, Shield, Lock, CreditCard, ExternalLink
+  X, Plane, Train, Bus, Loader2,
+  ChevronRight, ChevronLeft, Shield, Lock, CreditCard, ExternalLink, Armchair
 } from "lucide-react";
 import toast from "react-hot-toast";
+import SeatMap from "@/components/SeatMap";
 
 const SEAT_CLASSES = {
   flight: ["Economy", "Business", "First Class"],
@@ -21,12 +22,19 @@ const CLASS_MULTIPLIER = {
   Seater: 1, "AC Sleeper": 1.8,
 };
 
+const STEP_TITLES = {
+  1: "Select Class",
+  2: "Choose Seats",
+  3: "Review & Pay",
+};
+
 export default function BookingModal({ route, travelers, returnDate, departDate, onClose, onSuccess }) {
   const { data: session } = useSession();
   const router = useRouter();
 
   const [step, setStep] = useState(1);
   const [seatClass, setSeatClass] = useState(SEAT_CLASSES[route.type][0]);
+  const [selectedSeats, setSelectedSeats] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const multiplier = CLASS_MULTIPLIER[seatClass] ?? 1;
@@ -40,6 +48,11 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
       return;
     }
 
+    if (selectedSeats.length !== travelers) {
+      toast.error(`Please select ${travelers} seat${travelers > 1 ? "s" : ""}`);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -49,6 +62,7 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
           routeId: route.id,
           travelers,
           seatClass,
+          selectedSeats,
           departDate: departDate || new Date().toISOString().split("T")[0],
           returnDate: returnDate || null,
         }),
@@ -57,12 +71,18 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // Redirect to Stripe Checkout
       window.location.href = data.data.url;
     } catch (err) {
       toast.error(err.message || "Failed to initiate payment. Please try again.");
       setLoading(false);
     }
+  };
+
+  const goToStep = (s) => {
+    if (s === 2) {
+      setSelectedSeats([]); // Reset when going to seat selection
+    }
+    setStep(s);
   };
 
   const typeIcon = route.type === "flight" ? <Plane size={15} /> : route.type === "train" ? <Train size={15} /> : <Bus size={15} />;
@@ -77,14 +97,13 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
         <div className="flex items-center justify-between p-5 border-b border-white/8">
           <div>
             <h2 className="font-display text-lg font-bold text-white">
-              {step === 1 && "Select Class"}
-              {step === 2 && "Review & Pay"}
+              {STEP_TITLES[step]}
             </h2>
             <div className="flex items-center gap-1.5 mt-1.5">
-              {[1, 2].map((s) => (
-                <div key={s} className={`h-1 w-8 rounded-full transition-all ${step >= s ? "bg-orange-500" : "bg-white/10"}`} />
+              {[1, 2, 3].map((s) => (
+                <div key={s} className={`h-1 w-6 rounded-full transition-all ${step >= s ? "bg-orange-500" : "bg-white/10"}`} />
               ))}
-              <span className="text-gray-600 text-xs ml-1">Step {step} of 2</span>
+              <span className="text-gray-600 text-xs ml-1">Step {step} of 3</span>
             </div>
           </div>
           {!loading && (
@@ -111,7 +130,7 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
 
         <div className="p-5">
 
-          {/* STEP 1 — Seat Class */}
+          {/* ──── STEP 1 — Seat Class ──── */}
           {step === 1 && (
             <>
               <p className="text-gray-500 text-xs uppercase tracking-wide mb-3">Choose Seat Class</p>
@@ -154,14 +173,39 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
                 </div>
               </div>
 
-              <button onClick={() => setStep(2)} className="btn-primary w-full flex items-center justify-center gap-2">
-                Continue to Payment <ChevronRight size={16} />
+              <button onClick={() => goToStep(2)} className="btn-primary w-full flex items-center justify-center gap-2">
+                <Armchair size={16} /> Choose Your Seats <ChevronRight size={16} />
               </button>
             </>
           )}
 
-          {/* STEP 2 — Review & Pay with Stripe */}
+          {/* ──── STEP 2 — Seat Selection ──── */}
           {step === 2 && (
+            <>
+              <SeatMap
+                routeId={route.id}
+                type={route.type}
+                travelers={travelers}
+                selectedSeats={selectedSeats}
+                onSeatsChange={setSelectedSeats}
+              />
+
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => goToStep(1)} className="btn-secondary px-5 py-3 text-sm flex items-center gap-1">
+                  <ChevronLeft size={14} /> Back
+                </button>
+                <button
+                  onClick={() => goToStep(3)}
+                  disabled={selectedSeats.length !== travelers}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                  Continue to Payment <ChevronRight size={16} />
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ──── STEP 3 — Review & Pay ──── */}
+          {step === 3 && (
             <>
               <p className="text-gray-500 text-xs uppercase tracking-wide mb-3">Booking Summary</p>
 
@@ -173,10 +217,11 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
                   ["Time", `${route.departure} → ${route.arrival}`],
                   ["Class", seatClass],
                   ["Travelers", String(travelers)],
+                  ["Seats", selectedSeats.sort().join(", ")],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between">
                     <span className="text-gray-500">{label}</span>
-                    <span className="text-white font-medium">{value}</span>
+                    <span className={`font-medium ${label === "Seats" ? "text-orange-400" : "text-white"}`}>{value}</span>
                   </div>
                 ))}
                 <div className="h-px bg-white/10" />
@@ -203,7 +248,9 @@ export default function BookingModal({ route, travelers, returnDate, departDate,
               </div>
 
               <div className="flex gap-3">
-                <button onClick={() => setStep(1)} disabled={loading} className="btn-secondary px-5 py-3 text-sm">Back</button>
+                <button onClick={() => goToStep(2)} disabled={loading} className="btn-secondary px-5 py-3 text-sm flex items-center gap-1">
+                  <ChevronLeft size={14} /> Back
+                </button>
                 <button onClick={handlePayWithStripe} disabled={loading}
                   className="btn-primary flex-1 flex items-center justify-center gap-2">
                   {loading

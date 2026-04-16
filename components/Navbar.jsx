@@ -3,7 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plane, Train, Bus, LayoutDashboard, LogOut, User, Menu, X } from "lucide-react";
+import { Plane, Train, Bus, LayoutDashboard, LogOut, User, Menu, X, Shield, HelpCircle, Map } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Navbar({ initialSession }) {
@@ -12,6 +12,8 @@ export default function Navbar({ initialSession }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isAdmin = activeSession?.user?.role === "admin";
 
   // Close mobile menu on route change / resize
   useEffect(() => {
@@ -33,9 +35,9 @@ export default function Navbar({ initialSession }) {
   };
 
   const navLinks = [
-    { href: "/?type=flight", label: "Flights", icon: <Plane size={14} /> },
-    { href: "/?type=train",  label: "Trains",  icon: <Train size={14} /> },
-    { href: "/?type=bus",    label: "Buses",   icon: <Bus size={14} /> },
+    { href: "/search?type=flight", label: "Book Flights", icon: <Plane size={14} /> },
+    { href: "/dashboard", label: "My Bookings", icon: <LayoutDashboard size={14} /> },
+    { href: "#", label: "Support", icon: <Shield size={14} /> },
   ];
 
   return (
@@ -51,36 +53,54 @@ export default function Navbar({ initialSession }) {
           </Link>
 
           {/* Center links — desktop */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((item) => (
-              <Link key={item.label} href={item.href}
-                className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
-                {item.icon}{item.label}
+          <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            <Link href="/search?type=flight" className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+              <Plane size={14} /> Book Flights
+            </Link>
+            <Link href="/destinations" className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+              <Map size={14} /> Destinations
+            </Link>
+            <Link href="/support" className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+              <HelpCircle size={14} /> Help/Support
+            </Link>
+
+            {activeSession?.user && (
+              <Link href="/dashboard" className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+                <LayoutDashboard size={14} /> My Bookings
               </Link>
-            ))}
+            )}
+
+            {isAdmin && (
+              <>
+                <Link href="/admin" className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+                  <Shield size={14} /> Admin Dashboard
+                </Link>
+                <Link href="/admin/routes" className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+                  <Plane size={14} /> Routes
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Right — desktop */}
           <div className="hidden md:flex items-center gap-3">
             {activeSession?.user ? (
-              <div className="relative">
-                <button onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-2 text-sm text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded-xl transition-all border border-white/10">
-                  <User size={15} className="text-orange-500" />
-                  <span className="max-w-[100px] truncate">{activeSession.user.name?.split(" ")[0]}</span>
-                </button>
-                {menuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 glass-dark rounded-xl border border-white/10 overflow-hidden shadow-xl">
-                    <Link href="/dashboard" onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all">
-                      <LayoutDashboard size={14} className="text-orange-500" /> Dashboard
-                    </Link>
-                    <button onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-gray-300 hover:text-red-400 hover:bg-white/5 transition-all">
-                      <LogOut size={14} /> Sign Out
-                    </button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                    {activeSession.user.image ? (
+                      <img src={activeSession.user.image} alt="User" className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={15} className="text-orange-500" />
+                    )}
                   </div>
-                )}
+                  <span className="text-sm text-gray-300">{activeSession.user.name?.split(" ")[0]}</span>
+                </div>
+
+                <button onClick={handleSignOut}
+                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-red-400 px-3 py-2 transition-all">
+                  <LogOut size={14} /> Sign Out
+                </button>
               </div>
             ) : (
               <>
@@ -148,6 +168,12 @@ export default function Navbar({ initialSession }) {
                     className="flex items-center gap-3 text-gray-300 hover:text-white text-sm px-3 py-3 rounded-xl hover:bg-white/5 transition-all">
                     <LayoutDashboard size={14} className="text-orange-500" /> Dashboard
                   </Link>
+                  {isAdmin && (
+                    <Link href="/admin" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 text-gray-300 hover:text-white text-sm px-3 py-3 rounded-xl hover:bg-white/5 transition-all">
+                      <Shield size={14} className="text-purple-400" /> Admin Panel
+                    </Link>
+                  )}
                   <button onClick={() => { handleSignOut(); setMobileOpen(false); }}
                     className="w-full flex items-center gap-3 text-gray-300 hover:text-red-400 text-sm px-3 py-3 rounded-xl hover:bg-white/5 transition-all">
                     <LogOut size={14} /> Sign Out

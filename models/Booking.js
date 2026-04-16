@@ -21,6 +21,7 @@ const BookingSchema = new mongoose.Schema(
     paymentMethod: { type: String, default: "Card" },
     paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" },
     stripeSessionId: { type: String },
+    selectedSeats: { type: [String], default: [] },
   },
   { timestamps: true }
 );

@@ -1,5 +1,6 @@
 // scripts/seed.cjs
 // Run with: node scripts/seed.cjs
+// Generates lots of flights for ALL city pair combinations
 
 require('dotenv').config({ path: '.env.local' });
 const mongoose = require('mongoose');
@@ -24,30 +25,127 @@ const RouteSchema = new mongoose.Schema({
 
 const Route = mongoose.models.Route || mongoose.model("Route", RouteSchema);
 
-const routes = [
-  // Flights
-  { type: "flight", fromCity: "Delhi", toCity: "Mumbai", price: 4299, duration: "2h 15m", operator: "IndiGo", departure: "06:00", arrival: "08:15", seatsLeft: 42 },
-  { type: "flight", fromCity: "Delhi", toCity: "Mumbai", price: 5100, duration: "2h 20m", operator: "Air India", departure: "09:30", arrival: "11:50", seatsLeft: 18 },
-  { type: "flight", fromCity: "Mumbai", toCity: "Bangalore", price: 3800, duration: "1h 45m", operator: "SpiceJet", departure: "07:15", arrival: "09:00", seatsLeft: 55 },
-  { type: "flight", fromCity: "Bangalore", toCity: "Chennai", price: 2900, duration: "1h 10m", operator: "IndiGo", departure: "11:00", arrival: "12:10", seatsLeft: 30 },
-  { type: "flight", fromCity: "Delhi", toCity: "Kolkata", price: 5500, duration: "2h 30m", operator: "Vistara", departure: "14:00", arrival: "16:30", seatsLeft: 22 },
-  { type: "flight", fromCity: "Hyderabad", toCity: "Mumbai", price: 4100, duration: "1h 55m", operator: "Air India", departure: "08:45", arrival: "10:40", seatsLeft: 38 },
-  { type: "flight", fromCity: "Chennai", toCity: "Delhi", price: 6200, duration: "2h 45m", operator: "IndiGo", departure: "16:20", arrival: "19:05", seatsLeft: 14 },
-  { type: "flight", fromCity: "Kolkata", toCity: "Bangalore", price: 5900, duration: "2h 50m", operator: "SpiceJet", departure: "07:00", arrival: "09:50", seatsLeft: 47 },
-  // Trains
-  { type: "train", fromCity: "Delhi", toCity: "Mumbai", price: 1450, duration: "16h 35m", operator: "Rajdhani Express", departure: "16:25", arrival: "08:35+1", seatsLeft: 120 },
-  { type: "train", fromCity: "Mumbai", toCity: "Goa", price: 850, duration: "8h 30m", operator: "Konkan Kanya Express", departure: "22:00", arrival: "06:30+1", seatsLeft: 85 },
-  { type: "train", fromCity: "Bangalore", toCity: "Chennai", price: 420, duration: "5h 15m", operator: "Shatabdi Express", departure: "06:00", arrival: "11:15", seatsLeft: 200 },
-  { type: "train", fromCity: "Delhi", toCity: "Kolkata", price: 1200, duration: "17h 00m", operator: "Duronto Express", departure: "08:05", arrival: "01:05+1", seatsLeft: 95 },
-  { type: "train", fromCity: "Hyderabad", toCity: "Bangalore", price: 560, duration: "11h 00m", operator: "Kacheguda Express", departure: "18:30", arrival: "05:30+1", seatsLeft: 140 },
-  // Buses
-  { type: "bus", fromCity: "Pune", toCity: "Goa", price: 950, duration: "9h 00m", operator: "VRL Travels", departure: "21:00", arrival: "06:00+1", seatsLeft: 32 },
-  { type: "bus", fromCity: "Mumbai", toCity: "Pune", price: 350, duration: "3h 30m", operator: "Neeta Travels", departure: "07:00", arrival: "10:30", seatsLeft: 28 },
-  { type: "bus", fromCity: "Bangalore", toCity: "Mysore", price: 200, duration: "3h 00m", operator: "KSRTC", departure: "06:30", arrival: "09:30", seatsLeft: 40 },
-  { type: "bus", fromCity: "Chennai", toCity: "Pondicherry", price: 180, duration: "3h 15m", operator: "PTC Travels", departure: "08:00", arrival: "11:15", seatsLeft: 35 },
-  { type: "bus", fromCity: "Delhi", toCity: "Agra", price: 400, duration: "4h 00m", operator: "Raj National Express", departure: "06:00", arrival: "10:00", seatsLeft: 22 },
-];
+// ── City data with coordinates for realistic pricing/duration ──
+const CITIES = {
+  "Agra":         { lat: 27.18, lon: 78.02 },
+  "Ahmedabad":    { lat: 23.02, lon: 72.57 },
+  "Amritsar":     { lat: 31.63, lon: 74.87 },
+  "Bangalore":    { lat: 12.97, lon: 77.59 },
+  "Bhopal":       { lat: 23.26, lon: 77.41 },
+  "Bhubaneswar":  { lat: 20.30, lon: 85.82 },
+  "Chandigarh":   { lat: 30.73, lon: 76.78 },
+  "Chennai":      { lat: 13.08, lon: 80.27 },
+  "Coimbatore":   { lat: 11.00, lon: 76.96 },
+  "Dehradun":     { lat: 30.32, lon: 78.03 },
+  "Delhi":        { lat: 28.61, lon: 77.21 },
+  "Goa":          { lat: 15.30, lon: 74.12 },
+  "Guwahati":     { lat: 26.14, lon: 91.74 },
+  "Hyderabad":    { lat: 17.38, lon: 78.49 },
+  "Indore":       { lat: 22.72, lon: 75.86 },
+  "Jaipur":       { lat: 26.91, lon: 75.79 },
+  "Kochi":        { lat: 9.93,  lon: 76.27 },
+  "Kolkata":      { lat: 22.57, lon: 88.36 },
+  "Lucknow":      { lat: 26.85, lon: 80.95 },
+  "Mumbai":       { lat: 19.08, lon: 72.88 },
+  "Mysore":       { lat: 12.30, lon: 76.66 },
+  "Nagpur":       { lat: 21.15, lon: 79.09 },
+  "Patna":        { lat: 25.59, lon: 85.14 },
+  "Pondicherry":  { lat: 11.93, lon: 79.83 },
+  "Pune":         { lat: 18.52, lon: 73.86 },
+  "Ranchi":       { lat: 23.34, lon: 85.31 },
+  "Srinagar":     { lat: 34.08, lon: 74.80 },
+  "Thiruvananthapuram": { lat: 8.52, lon: 76.94 },
+  "Udaipur":      { lat: 24.58, lon: 73.68 },
+  "Varanasi":     { lat: 25.32, lon: 83.01 },
+  "Visakhapatnam":{ lat: 17.69, lon: 83.22 },
+};
 
+const CITY_NAMES = Object.keys(CITIES);
+
+// ── Operators ──
+const FLIGHT_OPERATORS = ["IndiGo", "Air India", "SpiceJet", "Vistara", "Akasa Air", "Go First"];
+
+// ── Helpers ──
+function distanceKm(c1, c2) {
+  const R = 6371;
+  const dLat = ((c2.lat - c1.lat) * Math.PI) / 180;
+  const dLon = ((c2.lon - c1.lon) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos((c1.lat * Math.PI) / 180) * Math.cos((c2.lat * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function randomTime(minH = 5, maxH = 22) {
+  const h = randInt(minH, maxH);
+  const m = pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+  return `${pad(h)}:${pad(m)}`;
+}
+
+function addTime(dep, durationMins) {
+  const [hh, mm] = dep.split(":").map(Number);
+  const total = hh * 60 + mm + durationMins;
+  const days = Math.floor(total / (24 * 60));
+  const remaining = total % (24 * 60);
+  const arrH = Math.floor(remaining / 60);
+  const arrM = remaining % 60;
+  return `${pad(arrH)}:${pad(arrM)}${days > 0 ? `+${days}` : ""}`;
+}
+
+function formatDuration(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h}h ${pad(m)}m`;
+}
+
+// ── Route generators ──
+function generateFlight(from, to, dist) {
+  const durationMins = Math.round(dist / 8 + randInt(30, 60)); // ~8 km/min avg speed
+  const basePrice = Math.round(dist * 3 + randInt(500, 1500));
+  const dep = randomTime(5, 23); // More spread out times
+  return {
+    type: "flight",
+    fromCity: from,
+    toCity: to,
+    price: Math.round(basePrice / 100) * 100, // round to nearest 100
+    duration: formatDuration(durationMins),
+    operator: pick(FLIGHT_OPERATORS),
+    departure: dep,
+    arrival: addTime(dep, durationMins),
+    seatsLeft: randInt(5, 60),
+    totalSeats: 60, // Fixed capacity for standard plane size modeling in this app
+  };
+}
+
+
+// ── Generate all routes ──
+function generateAllRoutes() {
+  const routes = [];
+
+  for (let i = 0; i < CITY_NAMES.length; i++) {
+    for (let j = 0; j < CITY_NAMES.length; j++) {
+      if (i === j) continue;
+
+      const from = CITY_NAMES[i];
+      const to = CITY_NAMES[j];
+      const dist = distanceKm(CITIES[from], CITIES[to]);
+
+      // 6 to 12 flights per pair
+      const numFlights = randInt(6, 12);
+      for (let k = 0; k < numFlights; k++) {
+        routes.push(generateFlight(from, to, dist));
+      }
+    }
+  }
+
+  return routes;
+}
+
+// ── Seed ──
 async function seed() {
   console.log("🔌 Connecting to MongoDB...");
   await mongoose.connect(MONGODB_URI);
@@ -56,15 +154,23 @@ async function seed() {
   console.log("🗑️  Clearing existing routes...");
   await Route.deleteMany({});
 
-  console.log("🌱 Inserting routes...");
-  await Route.insertMany(routes);
+  console.log("🌱 Generating flight routes for all city pairs...");
+  const routes = generateAllRoutes();
 
-  console.log(`✅ Seeded ${routes.length} routes successfully!`);
-  console.log("\nYou can now search:");
-  console.log("  Delhi → Mumbai (flights + train)");
-  console.log("  Mumbai → Goa (train + bus)");
-  console.log("  Bangalore → Chennai (flight + train)");
-  console.log("  Pune → Goa (bus)\n");
+  // Insert in batches of 500
+  const batchSize = 500;
+  for (let i = 0; i < routes.length; i += batchSize) {
+    const batch = routes.slice(i, i + batchSize);
+    await Route.insertMany(batch);
+    console.log(`   Inserted ${Math.min(i + batchSize, routes.length)} / ${routes.length}`);
+  }
+
+  const flights = routes.filter(r => r.type === "flight").length;
+
+  console.log(`\n✅ Seeded ${routes.length} routes across ${CITY_NAMES.length} cities!`);
+  console.log(`   ✈ ${flights} flights`);
+  console.log(`\nCities: ${CITY_NAMES.join(", ")}`);
+  console.log("\nEvery city pair now has many flight routes.\n");
 
   await mongoose.disconnect();
   process.exit(0);

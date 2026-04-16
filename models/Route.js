@@ -11,6 +11,8 @@ const RouteSchema = new mongoose.Schema(
     departure: { type: String },
     arrival: { type: String },
     seatsLeft: { type: Number, default: 50 },
+    bookedSeats: { type: [String], default: [] },
+    totalSeats: { type: Number, default: 30 },
   },
   { timestamps: true }
 );

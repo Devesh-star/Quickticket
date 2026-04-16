@@ -1,52 +1,90 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import BookingCard from "@/components/BookingCard";
-import BookingModal from "@/components/BookingModal";
-import { useRouter } from "next/navigation";
+import { Shield, Zap, BadgePercent, MapPin, ArrowRight, Search, MousePointerClick, CreditCard } from "lucide-react";
+
+const DESTINATIONS = [
+  { from: "Delhi", to: "Mumbai", price: "2,499", emoji: "🏙", type: "flight" },
+  { from: "Mumbai", to: "Goa", price: "1,299", emoji: "🏖", type: "bus" },
+  { from: "Bangalore", to: "Chennai", price: "899", emoji: "🌆", type: "train" },
+  { from: "Delhi", to: "Jaipur", price: "699", emoji: "🏰", type: "bus" },
+  { from: "Kolkata", to: "Hyderabad", price: "3,199", emoji: "✈", type: "flight" },
+  { from: "Pune", to: "Mumbai", price: "499", emoji: "🚂", type: "train" },
+];
+
+const WHY_US = [
+  {
+    icon: <Shield size={24} />,
+    title: "Secure Payments",
+    desc: "Industry-standard SSL encryption with trusted Stripe payment processing. Your data is always safe.",
+    color: "text-green-400",
+    bg: "bg-green-400/10",
+    border: "border-green-400/20",
+  },
+  {
+    icon: <Zap size={24} />,
+    title: "Lightning Fast",
+    desc: "Real-time seat availability and instant booking confirmations. No waiting, no delays.",
+    color: "text-blue-400",
+    bg: "bg-blue-400/10",
+    border: "border-blue-400/20",
+  },
+  {
+    icon: <BadgePercent size={24} />,
+    title: "Best Prices",
+    desc: "Compare across flights, trains, and buses to find the best deal for every route.",
+    color: "text-orange-400",
+    bg: "bg-orange-400/10",
+    border: "border-orange-400/20",
+  },
+];
+
+const STEPS = [
+  {
+    num: "01",
+    icon: <Search size={22} />,
+    title: "Search Routes",
+    desc: "Enter your origin, destination, and travel date. Filter by transport type and class.",
+  },
+  {
+    num: "02",
+    icon: <MousePointerClick size={22} />,
+    title: "Select & Customize",
+    desc: "Pick your preferred route, choose your seat class, and select exact seats from the live seat map.",
+  },
+  {
+    num: "03",
+    icon: <CreditCard size={22} />,
+    title: "Pay & Go",
+    desc: "Complete secure checkout via Stripe. Get instant confirmation with your booking reference.",
+  },
+];
 
 function HomeContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const [results, setResults] = useState(null);
-  const [searching, setSearching] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState(null);
-  const [bookingParams, setBookingParams] = useState(null);
 
-  const handleSearch = async (params) => {
-    setSearching(true);
-    setResults(null);
-    try {
-      const query = new URLSearchParams({
-        from: params.from,
-        to: params.to,
-        type: params.type,
-        travelers: params.travelers,
-      });
-      const res = await fetch(`/api/search?${query}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setResults(data.data.routes);
-      setBookingParams(params);
-    } catch {
-      import("react-hot-toast").then(({ default: toast }) => toast.error("Search failed. Please try again."));
-    } finally {
-      setSearching(false);
-    }
+  const handleSearch = (params) => {
+    const query = new URLSearchParams({
+      from: params.from,
+      to: params.to,
+      type: params.type,
+      travelers: String(params.travelers),
+    });
+    if (params.departDate) query.set("departDate", params.departDate);
+    if (params.returnDate) query.set("returnDate", params.returnDate);
+    router.push(`/search?${query.toString()}`);
   };
-
-  const typeColors = { flight: "text-blue-400", train: "text-green-400", bus: "text-yellow-400" };
-  const typeLabels = { flight: "✈ Flight", train: "🚂 Train", bus: "🚌 Bus" };
 
   return (
     <main className="min-h-screen bg-[#0a0a14]">
       <Navbar />
 
-      {/* Hero */}
-      <section className="gradient-hero pt-24 sm:pt-32 pb-12 sm:pb-16 px-4">
-        <div className="max-w-3xl mx-auto text-center mb-12">
+      {/* ──── Hero ──── */}
+      <section className="gradient-hero pt-24 sm:pt-32 pb-16 sm:pb-20 px-4">
+        <div className="max-w-3xl mx-auto text-center mb-12 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 text-orange-400 text-xs font-medium mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
             Live seat availability · Real-time pricing
@@ -61,103 +99,132 @@ function HomeContent() {
           </p>
         </div>
 
-        {/* Search Card */}
-        <BookingCard onSearch={handleSearch} searching={searching} />
+        <div className="animate-fade-in-up animate-fade-in-up-delay-1">
+          <BookingCard onSearch={handleSearch} searching={false} />
+        </div>
       </section>
 
-      {/* Results */}
-      {results !== null && (
-        <section className="max-w-4xl mx-auto px-4 pb-20">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-display font-bold text-white text-xl">
-              {results.length === 0 ? "No results found" : `${results.length} result${results.length !== 1 ? "s" : ""} found`}
-            </h2>
-            {results.length > 0 && (
-              <p className="text-gray-500 text-sm">{bookingParams?.from} → {bookingParams?.to}</p>
-            )}
-          </div>
-
-          {results.length === 0 ? (
-            <div className="glass rounded-2xl p-12 text-center">
-              <p className="text-4xl mb-3">🔍</p>
-              <p className="text-gray-300 font-medium">No routes found</p>
-              <p className="text-gray-600 text-sm mt-1">Try different cities or transport type</p>
-              <p className="text-gray-700 text-xs mt-3">Available: Delhi→Mumbai, Mumbai→Goa, Bangalore→Chennai</p>
+      {/* ──── Stats ──── */}
+      <section className="max-w-3xl mx-auto px-4 pb-16 text-center">
+        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mt-4">
+          {[["50K+", "Happy Travelers"], ["200+", "Live Routes"], ["99.9%", "Uptime"]].map(([val, label]) => (
+            <div key={label}>
+              <p className="font-display font-black text-white text-2xl sm:text-3xl">{val}</p>
+              <p className="text-gray-500 text-sm mt-1">{label}</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {results.map((route) => (
-                <div key={route.id} className="glass rounded-2xl p-5 card-hover">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-xl">
-                        {route.type === "flight" ? "✈" : route.type === "train" ? "🚂" : "🚌"}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs font-semibold uppercase tracking-wide ${typeColors[route.type]}`}>
-                            {typeLabels[route.type]}
-                          </span>
-                          <span className="text-gray-700">·</span>
-                          <span className="text-gray-400 text-sm">{route.operator}</span>
-                        </div>
-                        <p className="text-white font-bold text-lg">
-                          {route.fromCity} <span className="text-gray-500 font-normal text-base">→</span> {route.toCity}
-                        </p>
-                        <p className="text-gray-500 text-sm mt-0.5">
-                          {route.departure} – {route.arrival} · {route.duration}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 sm:flex-col sm:items-end">
-                      <div className="sm:text-right">
-                        <p className="text-orange-500 font-display font-black text-2xl">
-                          ₹{route.price.toLocaleString()}
-                        </p>
-                        <p className="text-gray-600 text-xs">per person · {route.seatsLeft} seats left</p>
-                      </div>
-                      <button
-                        onClick={() => setSelectedRoute(route)}
-                        className="btn-primary text-sm py-2.5 px-5 whitespace-nowrap">
-                        Book Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+          ))}
+        </div>
+      </section>
 
-      {/* Stats */}
-      {!results && (
-        <section className="max-w-3xl mx-auto px-4 pb-20 text-center">
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 mt-4">
-            {[["50K+", "Happy Travelers"], ["200+", "Live Routes"], ["99.9%", "Uptime"]].map(([val, label]) => (
-              <div key={label}>
-                <p className="font-display font-black text-white text-2xl sm:text-3xl">{val}</p>
-                <p className="text-gray-500 text-sm mt-1">{label}</p>
+      {/* ──── Why Choose Us ──── */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
+        <div className="text-center mb-12">
+          <p className="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-2">Why QuickTicket</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white">
+            Built for the Modern Traveler
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {WHY_US.map((item, i) => (
+            <div
+              key={item.title}
+              className={`glass rounded-2xl p-6 card-hover animate-fade-in-up animate-fade-in-up-delay-${i + 1}`}
+            >
+              <div className={`w-12 h-12 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center ${item.color} mb-4`}>
+                {item.icon}
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <h3 className="font-display font-bold text-white text-lg mb-2">{item.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Booking Modal */}
-      {selectedRoute && bookingParams && (
-        <BookingModal
-          route={selectedRoute}
-          travelers={parseInt(bookingParams.travelers) || 1}
-          departDate={bookingParams.departDate}
-          returnDate={bookingParams.returnDate}
-          onClose={() => setSelectedRoute(null)}
-          onSuccess={() => {
-            setSelectedRoute(null);
-            router.push("/dashboard");
-          }}
-        />
-      )}
+      {/* ──── Popular Destinations ──── */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
+        <div className="text-center mb-12">
+          <p className="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-2">Explore</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white">
+            Popular Destinations
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {DESTINATIONS.map((dest) => (
+            <button
+              key={`${dest.from}-${dest.to}`}
+              onClick={() => {
+                router.push(`/search?from=${dest.from}&to=${dest.to}&type=${dest.type}&travelers=1`);
+              }}
+              className="glass rounded-2xl p-5 text-left card-hover group"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">{dest.emoji}</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide bg-white/5 px-2.5 py-1 rounded-full">
+                  {dest.type}
+                </span>
+              </div>
+              <p className="font-display font-bold text-white text-lg">
+                {dest.from}
+                <span className="text-gray-500 font-normal mx-2">→</span>
+                {dest.to}
+              </p>
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-orange-500 font-display font-bold">
+                  from ₹{dest.price}
+                </p>
+                <ArrowRight size={16} className="text-gray-600 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ──── How It Works ──── */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+        <div className="text-center mb-12">
+          <p className="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-2">Simple Process</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white">
+            How It Works
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {STEPS.map((step, i) => (
+            <div key={step.num} className="relative glass rounded-2xl p-6 card-hover text-center">
+              {/* Step number badge */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                Step {step.num}
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mx-auto mt-3 mb-4">
+                {step.icon}
+              </div>
+              <h3 className="font-display font-bold text-white text-lg mb-2">{step.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
+              {/* Connector line (hidden on last) */}
+              {i < STEPS.length - 1 && (
+                <div className="hidden sm:block absolute top-1/2 -right-3 w-6 border-t border-dashed border-gray-700" />
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ──── CTA ──── */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-20 text-center">
+        <div className="glass rounded-2xl p-8 sm:p-12 gradient-border">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-3">
+            Ready to Travel?
+          </h2>
+          <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto mb-6">
+            Join 50,000+ travelers who book smarter with QuickTicket. Start your journey today.
+          </p>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="btn-primary text-sm sm:text-base"
+          >
+            Search Routes Now
+          </button>
+        </div>
+      </section>
     </main>
   );
 }
