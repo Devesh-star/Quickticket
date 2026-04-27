@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, useRef, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { Plane, Train, Bus, SlidersHorizontal, X, Loader2, ArrowUpDown, Search } from "lucide-react";
@@ -20,8 +20,9 @@ function SearchContent() {
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Filter state
-  const [maxPrice, setMaxPrice] = useState("");
+  // Filter state — slider value is instant, debouncedPrice drives API calls
+  const [sliderPrice, setSliderPrice] = useState("");
+  const [debouncedPrice, setDebouncedPrice] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 20000 });
   const [selectedTypes, setSelectedTypes] = useState(
     type !== "all" ? [type] : ["flight", "train", "bus"]
@@ -29,6 +30,14 @@ function SearchContent() {
   const [selectedOperators, setSelectedOperators] = useState([]);
   const [availableOperators, setAvailableOperators] = useState([]);
   const [sortBy, setSortBy] = useState("price-asc");
+  const debounceRef = useRef(null);
+
+  // Debounce slider → API price (400ms after user stops dragging)
+  const handleSliderChange = (val) => {
+    setSliderPrice(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedPrice(val), 400);
+  };
 
   const fetchResults = useCallback(async () => {
     if (!from || !to) { setLoading(false); return; }
@@ -39,7 +48,7 @@ function SearchContent() {
       else if (selectedTypes.length < 3) {
         // API supports single type, so we fetch all and filter client-side
       }
-      if (maxPrice) query.set("maxPrice", maxPrice);
+      if (debouncedPrice) query.set("maxPrice", debouncedPrice);
       if (selectedOperators.length > 0) query.set("operators", selectedOperators.join(","));
 
       const res = await fetch(`/api/search?${query}`);
@@ -65,7 +74,7 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, travelers, selectedTypes, maxPrice, selectedOperators]);
+  }, [from, to, travelers, selectedTypes, debouncedPrice, selectedOperators]);
 
   useEffect(() => {
     fetchResults();
@@ -112,25 +121,48 @@ function SearchContent() {
     bus: <Bus size={14} />,
   };
 
-  const FilterSidebar = () => (
+  const sliderValue = Number(sliderPrice || priceRange.max);
+  const sliderPercent = priceRange.max > priceRange.min
+    ? ((sliderValue - priceRange.min) / (priceRange.max - priceRange.min)) * 100
+    : 100;
+
+  // Filter content as JSX variable (NOT a component) so React preserves DOM identity during drag
+  const filterContent = (
     <div className="space-y-6">
       {/* Price Range */}
       <div>
-        <h3 className="text-white font-semibold text-sm mb-3">Max Price</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-semibold text-sm">Max Price</h3>
+          <span className="text-orange-500 font-display font-bold text-lg">
+            ₹{sliderValue.toLocaleString()}
+          </span>
+        </div>
         <div className="space-y-3">
-          <input
-            type="range"
-            min={priceRange.min}
-            max={priceRange.max}
-            value={maxPrice || priceRange.max}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            className="w-full"
-          />
+          <div className="relative h-10 flex items-center">
+            {/* Track background */}
+            <div className="absolute inset-x-0 h-2 rounded-full bg-white/8" />
+            {/* Filled track */}
+            <div
+              className="absolute left-0 h-2 rounded-full pointer-events-none"
+              style={{
+                width: `${sliderPercent}%`,
+                background: 'linear-gradient(90deg, #f97316, #fb923c)',
+                boxShadow: '0 0 12px rgba(249,115,22,0.3)',
+              }}
+            />
+            {/* Native range input on top */}
+            <input
+              type="range"
+              min={priceRange.min}
+              max={priceRange.max}
+              step={Math.max(1, Math.round((priceRange.max - priceRange.min) / 200))}
+              value={sliderValue}
+              onChange={(e) => handleSliderChange(e.target.value)}
+              className="price-slider absolute inset-x-0 w-full h-10 cursor-pointer"
+            />
+          </div>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <span>₹{priceRange.min.toLocaleString()}</span>
-            <span className="text-orange-500 font-semibold text-sm">
-              ₹{(maxPrice || priceRange.max).toLocaleString()}
-            </span>
             <span>₹{priceRange.max.toLocaleString()}</span>
           </div>
         </div>
@@ -169,7 +201,8 @@ function SearchContent() {
       {/* Clear Filters */}
       <button
         onClick={() => {
-          setMaxPrice("");
+          setSliderPrice("");
+          setDebouncedPrice("");
           setSelectedTypes(["flight", "train", "bus"]);
           setSelectedOperators([]);
         }}
@@ -228,7 +261,7 @@ function SearchContent() {
               <h2 className="font-display font-bold text-white text-sm mb-5 flex items-center gap-2">
                 <SlidersHorizontal size={14} className="text-orange-500" /> Filters
               </h2>
-              <FilterSidebar />
+              {filterContent}
             </div>
           </aside>
 
@@ -310,7 +343,7 @@ function SearchContent() {
               </button>
             </div>
             <div className="p-5">
-              <FilterSidebar />
+              {filterContent}
             </div>
           </div>
         </div>
